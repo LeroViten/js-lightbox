@@ -64,8 +64,16 @@ const galleryItems = [
   },
 ];
 
-// console.log(galleryItems.length);
+// create refs for easier handling:
+const refs = {
+  gallery: document.querySelector('.js-gallery'),
+  modalImg: document.querySelector('.lightbox__image'),
+  modalOpen: document.querySelector('.js-lightbox'),
+  modalCloseBtn: document.querySelector('[data-action="close-lightbox"]'),
+  backdrop: document.querySelector('.lightbox__overlay'),
+};
 
+// create a function to handle object parsing from array into HTML gallery items:
 const galleryRef = document.querySelector('.js-gallery');
 
 const createGalleryItems = ({ preview, original, description }) => {
@@ -87,10 +95,55 @@ const createGalleryItems = ({ preview, original, description }) => {
 
   return galleryItem;
 };
-// console.log(createGalleryItems(galleryItems[0]));
-// console.log(createGalleryItems(galleryItems[2]));
-// console.log(createGalleryItems(galleryItems[1]));
 
 const galleryEl = galleryItems.map(createGalleryItems);
-// console.log(galleryEl);
 galleryRef.append(...galleryEl);
+
+// ============ MODAL WINDOW PARAMS ================
+
+refs.gallery.addEventListener('click', (event) => {
+  event.preventDefault();
+  const target = event.target;
+
+  if (event.target.nodeName !== 'IMG') {
+    return target;
+  }
+
+  onOpenModal(target);
+});
+
+refs.gallery.addEventListener('click', onOpenModal);
+refs.modalCloseBtn.addEventListener('click', onCloseModal);
+refs.backdrop.addEventListener('click', onBackdropClick);
+
+function onOpenModal(target) {
+  window.addEventListener('keydown', onEscKeyPress);
+  refs.modalOpen.classList.add('is-open');
+
+  galleryItems.forEach(({ preview, original, description }) => {
+    if (target.src === preview) {
+      refs.modalImg.src = `${original}`;
+      refs.modalImg.alt = `${description}`;
+    }
+  });
+}
+
+function onCloseModal() {
+  window.removeEventListener('keydown', onEscKeyPress);
+  refs.modalOpen.classList.remove('is-open');
+}
+
+function onEscKeyPress(event) {
+  const ESC_KEY_CODE = 'Escape';
+  const isEscKey = event.code === ESC_KEY_CODE;
+
+  if (isEscKey) {
+    onCloseModal();
+  }
+}
+
+function onBackdropClick(event) {
+  if (event.currentTarget === event.target) {
+    onCloseModal();
+  }
+}
