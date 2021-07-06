@@ -41,7 +41,7 @@ refs.gallery.addEventListener('click', (event) => {
   event.preventDefault();
   const target = event.target;
 
-  if (event.target.nodeName !== 'IMG') {
+  if (target.nodeName !== 'IMG') {
     return target;
   }
 
@@ -52,6 +52,7 @@ refs.gallery.addEventListener('click', onOpenModal);
 refs.modalCloseBtn.addEventListener('click', onCloseModal);
 refs.backdrop.addEventListener('click', onBackdropClick);
 
+// opening modal function
 function onOpenModal(target) {
   window.addEventListener('keydown', onEscKeyPress);
   refs.modalOpen.classList.add('is-open');
@@ -64,14 +65,17 @@ function onOpenModal(target) {
   });
 }
 
+// closing modal function
 function onCloseModal() {
   window.removeEventListener('keydown', onEscKeyPress);
   refs.modalOpen.classList.remove('is-open');
 
-  refs.modalImage.src = '';
-  refs.modalImage.alt = '';
+  refs.modalImg.src = '';
+  refs.modalImg.alt = '';
+  refs.modalImg.dataset.index = '';
 }
 
+// closing modal on Esc press
 function onEscKeyPress(event) {
   const ESC_KEY_CODE = 'Escape';
   const isEscKey = event.code === ESC_KEY_CODE;
@@ -81,6 +85,7 @@ function onEscKeyPress(event) {
   }
 }
 
+// closing modal on backdrop click
 function onBackdropClick(event) {
   if (event.currentTarget === event.target) {
     onCloseModal();
