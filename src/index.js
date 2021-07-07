@@ -8,32 +8,18 @@ const refs = {
   modalCloseBtn: document.querySelector('[data-action="close-lightbox"]'),
   backdrop: document.querySelector('.lightbox__overlay'),
 };
+let currentImgIndex;
 
-// create a function to handle object parsing from array into HTML gallery items:
-const galleryRef = document.querySelector('.js-gallery');
+// parsing markup from array into HTML gallery items:
 
-const createGalleryItems = ({ preview, original, description }) => {
-  const galleryItem = document.createElement('li');
-  galleryItem.classList.add('gallery__item');
-
-  const galleryItemLink = document.createElement('a');
-  galleryItemLink.classList.add('gallery__link');
-  galleryItemLink.href = `${original}`;
-
-  const galleryItemImage = document.createElement('img');
-  galleryItemImage.classList.add('gallery__image');
-  galleryItemImage.src = `${preview}`;
-  galleryItemImage.dataset.source = `${original}`;
-  galleryItemImage.alt = `${description}`;
-
-  galleryItemLink.appendChild(galleryItemImage);
-  galleryItem.appendChild(galleryItemLink);
-
-  return galleryItem;
-};
-
-const galleryEl = galleryItems.map(createGalleryItems);
-galleryRef.append(...galleryEl);
+const galleryItem = galleryItems.map((element, index) => {
+  return `<li class="gallery__item">
+  <a class="gallery_link" href="${element.original}" >
+  <img class="gallery__image" src="${element.preview}" alt="${element.description}" data-source="${element.original}" data-index="${index}">
+  </a>
+  </li>`;
+});
+refs.gallery.insertAdjacentHTML('beforeend', galleryItem.join(''));
 
 // ============ MODAL WINDOW PARAMS ================
 
@@ -55,12 +41,14 @@ refs.backdrop.addEventListener('click', onBackdropClick);
 // opening modal function
 function onOpenModal(target) {
   window.addEventListener('keydown', onEscKeyPress);
+  window.addEventListener('keydown', onImageChange);
   refs.modalOpen.classList.add('is-open');
 
   galleryItems.forEach(({ preview, original, description }) => {
     if (target.src === preview) {
       refs.modalImg.src = `${original}`;
       refs.modalImg.alt = `${description}`;
+      currentImgIndex = target.getAttribute('data-index');
     }
   });
 }
@@ -68,6 +56,7 @@ function onOpenModal(target) {
 // closing modal function
 function onCloseModal() {
   window.removeEventListener('keydown', onEscKeyPress);
+  window.removeEventListener('keydown', onImageChange);
   refs.modalOpen.classList.remove('is-open');
 
   refs.modalImg.src = '';
@@ -90,4 +79,29 @@ function onBackdropClick(event) {
   if (event.currentTarget === event.target) {
     onCloseModal();
   }
+}
+
+// changing images on right\left arrow buttons press:
+function onImageChange(event) {
+  const right = 'ArrowRight';
+  const left = 'ArrowLeft';
+
+  switch (event.code) {
+    case left:
+      currentImgIndex -= 1;
+      break;
+    case right:
+      currentImgIndex += 1;
+      break;
+  }
+
+  if (currentImgIndex > galleryItems.length - 1) {
+    currentImgIndex = 0;
+  }
+
+  if (currentImgIndex < 0) {
+    currentImgIndex = galleryItems.length - 1;
+  }
+
+  refs.modalImg.src = galleryItems[currentImgIndex].original;
 }
